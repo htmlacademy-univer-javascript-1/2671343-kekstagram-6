@@ -9,7 +9,7 @@ const isPalindrome = function (check) {
   return check === reverseStr;
 };
 
-const checkWorkMeetings = function (workStart, workEnd, meetStart, meetDur) {
+const checkWorkMeetHours = function (workStart, workEnd, meetStart, meetDur) {
   const toMinutes = (timeStr) => {
     const [h, m] = timeStr.split(':').map(Number);
     return h * 60 + m;

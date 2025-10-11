@@ -8,3 +8,17 @@ const isPalindrome = function (check) {
   }
   return check === reverseStr;
 };
+
+const checkWorkMeetings = function (workStart, workEnd, meetStart, meetDur) {
+  const toMinutes = (timeStr) => {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  const workStartMin = toMinutes(workStart);
+  const workEndMin = toMinutes(workEnd);
+  const meetStartMin = toMinutes(meetStart);
+  const meetEndMin = meetStartMin + meetDur;
+
+  return meetStartMin >= workStartMin && meetEndMin <= workEndMin;
+};

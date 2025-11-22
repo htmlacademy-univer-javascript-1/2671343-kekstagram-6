@@ -1,5 +1,5 @@
 import { getRandomInteger } from './utils.js';
-import { createComments } from './comments.js';
+import { createComments } from './comments-gen.js';
 
 const PHOTOS_AMOUNT = 25;
 const LIKES_MIN = 15;

@@ -1,9 +1,9 @@
 import { generatePhotosArray } from './photos-gen.js';
-import { renderThumbnails } from './photos-render.js';
+import { initGallery } from './gallery.js';
 
 const photosArray = generatePhotosArray();
 const picturesContainer = document.querySelector('.pictures');
 
-renderThumbnails(photosArray, picturesContainer);
+const gallery = initGallery(photosArray, picturesContainer);
 
 export { photosArray };

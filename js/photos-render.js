@@ -1,4 +1,3 @@
-
 const createThumbnail = (pictureData, index) => {
   const pictureTemplate = document.querySelector('#picture');
   const thumbnailElement = pictureTemplate.content.querySelector('.picture').cloneNode(true);
@@ -26,7 +25,11 @@ const renderThumbnails = (picturesList, picturesContainer) => {
     renderFragment.appendChild(thumbnail);
   });
 
-  picturesContainer.innerHTML = '';
+  // Удаляем только существующие миниатюры (.picture), не трогая другие элементы
+  const existingThumbnails = picturesContainer.querySelectorAll('.picture');
+  existingThumbnails.forEach(thumbnail => thumbnail.remove());
+
+  // Добавляем новые миниатюры в контейнер
   picturesContainer.appendChild(renderFragment);
 };
 

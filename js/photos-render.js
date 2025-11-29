@@ -1,5 +1,5 @@
 
-const createThumbnail = (pictureData) => {
+const createThumbnail = (pictureData, index) => {
   const pictureTemplate = document.querySelector('#picture');
   const thumbnailElement = pictureTemplate.content.querySelector('.picture').cloneNode(true);
 
@@ -13,14 +13,16 @@ const createThumbnail = (pictureData) => {
   const thumbLikes = thumbnailElement.querySelector('.picture__likes');
   thumbLikes.textContent = pictureData.likes;
 
+  thumbnailElement.dataset.index = index;
+
   return thumbnailElement;
 };
 
 const renderThumbnails = (picturesList, picturesContainer) => {
   const renderFragment = document.createDocumentFragment();
 
-  picturesList.forEach((pictureItem) => {
-    const thumbnail = createThumbnail(pictureItem);
+  picturesList.forEach((pictureItem, index) => {
+    const thumbnail = createThumbnail(pictureItem, index);
     renderFragment.appendChild(thumbnail);
   });
 

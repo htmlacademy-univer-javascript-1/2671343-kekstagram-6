@@ -52,12 +52,22 @@ const onCommentsLoaderClick = () => {
   renderCommentsPortion();
 };
 
-const closeFullscreenPhoto = () => {
-  bigPictureElement.classList.add('hidden');
-  body.classList.remove('modal-open');
+const setupEventListeners = () => {
+  document.addEventListener('keydown', onDocumentKeydown);
+  cancelButton.addEventListener('click', onCancelButtonClick);
+  commentsLoader.addEventListener('click', onCommentsLoaderClick);
+};
+
+const removeEventListeners = () => {
   document.removeEventListener('keydown', onDocumentKeydown);
   cancelButton.removeEventListener('click', onCancelButtonClick);
   commentsLoader.removeEventListener('click', onCommentsLoaderClick);
+};
+
+const closeFullscreenPhoto = () => {
+  bigPictureElement.classList.add('hidden');
+  body.classList.remove('modal-open');
+  removeEventListeners();
 };
 
 const onDocumentKeydown = (evt) => {
@@ -80,12 +90,16 @@ const renderComments = (comments) => {
   renderCommentsPortion();
 };
 
-const openFullscreenPhoto = (photoData) => {
+const fillPhotoData = (photoData) => {
   bigPictureImg.src = photoData.url;
   bigPictureImg.alt = photoData.description;
   likesCount.textContent = photoData.likes;
   commentsCount.textContent = photoData.comments.length;
   socialCaption.textContent = photoData.description;
+};
+
+const openFullscreenPhoto = (photoData) => {
+  fillPhotoData(photoData);
 
   commentCountBlock.classList.remove('hidden');
   commentsLoader.classList.remove('hidden');
@@ -95,9 +109,7 @@ const openFullscreenPhoto = (photoData) => {
   bigPictureElement.classList.remove('hidden');
   body.classList.add('modal-open');
 
-  document.addEventListener('keydown', onDocumentKeydown);
-  cancelButton.addEventListener('click', onCancelButtonClick);
-  commentsLoader.addEventListener('click', onCommentsLoaderClick);
+  setupEventListeners();
 };
 
 export { openFullscreenPhoto };

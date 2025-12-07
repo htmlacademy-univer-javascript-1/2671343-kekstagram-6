@@ -6,8 +6,8 @@ const overlay = form.querySelector('.img-upload__overlay');
 const cancelButton = form.querySelector('.img-upload__cancel');
 const hashtagInput = form.querySelector('.text__hashtags');
 const commentInput = form.querySelector('.text__description');
+const submitButton = form.querySelector('.img-upload__submit');
 
-// Инициализация Pristine
 const pristine = new Pristine(form, {
   classTo: 'img-upload__field-wrapper',
   errorClass: 'img-upload__field-wrapper--invalid',
@@ -17,10 +17,9 @@ const pristine = new Pristine(form, {
   errorTextClass: 'img-upload__error-text'
 });
 
-// Валидация хэш-тегов
 const validateHashtags = (value) => {
   if (value.trim() === '') {
-    return true; // хэш-теги необязательны
+    return true;
   }
 
   const hashtags = value.trim().toLowerCase().split(/\s+/);
@@ -94,7 +93,6 @@ const validateComment = (value) => (value.length <= 140);
 pristine.addValidator(hashtagInput, validateHashtags, getHashtagErrorMessage);
 pristine.addValidator(commentInput, validateComment, 'Длина комментария не должна превышать 140 символов');
 
-// Обработчики для предотвращения закрытия формы при фокусе
 const onHashtagKeydown = (evt) => {
   if (evt.key === 'Escape') {
     evt.stopPropagation();
@@ -132,13 +130,34 @@ const closeForm = () => {
 };
 
 const onFormSubmit = (evt) => {
+  evt.preventDefault();
+
   if (!pristine.validate()) {
-    evt.preventDefault();
-  } else {
-    setTimeout(() => {
-      closeForm();
-    }, 0);
+    return;
   }
+
+  // Блокируем кнопку отправки
+  submitButton.disabled = true;
+  submitButton.textContent = 'Публикую...';
+
+  setTimeout(() => {
+    closeForm();
+    submitButton.disabled = false;
+    submitButton.textContent = 'Опубликовать';
+
+    const successTemplate = document.querySelector('#success');
+    if (successTemplate) {
+      const successClone = successTemplate.content.cloneNode(true);
+      document.body.appendChild(successClone);
+
+      setTimeout(() => {
+        const successElement = document.querySelector('.success');
+        if (successElement) {
+          successElement.remove();
+        }
+      }, 3000);
+    }
+  }, 1000);
 };
 
 const onFileInputChange = () => {

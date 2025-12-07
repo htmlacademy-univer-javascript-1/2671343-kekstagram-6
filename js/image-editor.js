@@ -14,14 +14,56 @@ const SCALE_MIN = 25;
 const SCALE_MAX = 100;
 let currentScale = 100;
 
-// Настройки эффектов
+// Настройки эффектов согласно ТЗ
 const EFFECTS = {
-  none: { filter: 'none', min: 0, max: 0, step: 0, unit: '' },
-  chrome: { filter: 'grayscale', min: 0, max: 1, step: 0.1, unit: '' },
-  sepia: { filter: 'sepia', min: 0, max: 1, step: 0.1, unit: '' },
-  marvin: { filter: 'invert', min: 0, max: 100, step: 1, unit: '%' },
-  phobos: { filter: 'blur', min: 0, max: 3, step: 0.1, unit: 'px' },
-  heat: { filter: 'brightness', min: 1, max: 3, step: 0.1, unit: '' }
+  none: {
+    filter: 'none',
+    min: 0,
+    max: 0,
+    step: 0,
+    unit: '',
+    className: 'effects__preview--none'
+  },
+  chrome: {
+    filter: 'grayscale',
+    min: 0,
+    max: 1,
+    step: 0.1,
+    unit: '',
+    className: 'effects__preview--chrome'
+  },
+  sepia: {
+    filter: 'sepia',
+    min: 0,
+    max: 1,
+    step: 0.1,
+    unit: '',
+    className: 'effects__preview--sepia'
+  },
+  marvin: {
+    filter: 'invert',
+    min: 0,
+    max: 100,
+    step: 1,
+    unit: '%',
+    className: 'effects__preview--marvin'
+  },
+  phobos: {
+    filter: 'blur',
+    min: 0,
+    max: 3,
+    step: 0.1,
+    unit: 'px',
+    className: 'effects__preview--phobos'
+  },
+  heat: {
+    filter: 'brightness',
+    min: 1,
+    max: 3,
+    step: 0.1,
+    unit: '',
+    className: 'effects__preview--heat'
+  }
 };
 
 let currentEffect = 'none';
@@ -36,8 +78,43 @@ const applyEffect = (value) => {
     return;
   }
 
-  const actualValue = effect.min + (value / 100) * (effect.max - effect.min);
-  preview.style.filter = `${effect.filter}(${actualValue}${effect.unit})`;
+  // Для слайдера значение от 0 до 100, преобразуем в диапазон эффекта
+  const percentage = value / 100;
+  const effectValue = effect.min + percentage * (effect.max - effect.min);
+  preview.style.filter = `${effect.filter}(${effectValue}${effect.unit})`;
+};
+
+// Обновление настроек слайдера для текущего эффекта
+const updateSliderForEffect = (effectName) => {
+  if (!slider) {
+    return;
+  }
+
+  const effect = EFFECTS[effectName];
+
+  // Обновляем настройки слайдера
+  slider.updateOptions({
+    range: {
+      min: 0,
+      max: 100
+    },
+    start: 100, // Начальное значение 100% согласно ТЗ
+    step: 1,
+    format: {
+      to: (value) => {
+        // Преобразуем значение слайдера (0-100) в значение эффекта
+        const percentage = value / 100;
+        const effectValue = effect.min + percentage * (effect.max - effect.min);
+        // Форматируем согласно шагу эффекта
+        if (effect.step === 1) {
+          return effectValue.toFixed(0);
+        } else {
+          return effectValue.toFixed(1);
+        }
+      },
+      from: (value) => parseFloat(value)
+    }
+  });
 };
 
 // Инициализация слайдера
@@ -45,21 +122,22 @@ const initSlider = () => {
   slider = noUiSlider.create(effectLevelSlider, {
     range: {
       min: 0,
-      max: 100,
+      max: 100
     },
     start: 100,
     step: 1,
     connect: 'lower',
     format: {
-      to: (value) => Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1),
+      to: (value) => value.toFixed(0),
       from: (value) => parseFloat(value)
     }
   });
 
   slider.on('update', () => {
-    const value = slider.get();
-    effectLevelValue.value = value;
-    applyEffect(value);
+    const sliderValue = slider.get();
+    // Записываем значение слайдера (0-100) в скрытое поле
+    effectLevelValue.setAttribute('value', sliderValue);
+    applyEffect(sliderValue);
   });
 };
 
@@ -91,12 +169,22 @@ const onEffectChange = (evt) => {
     currentEffect = evt.target.value;
 
     if (currentEffect === 'none') {
+      // Скрываем слайдер для эффекта "Оригинал"
       effectLevel.classList.add('hidden');
       preview.style.filter = 'none';
+      effectLevelValue.setAttribute('value', '');
     } else {
+      // Показываем слайдер для других эффектов
       effectLevel.classList.remove('hidden');
-      applyEffect(100);
+
+      // Обновляем настройки слайдера для выбранного эффекта
+      updateSliderForEffect(currentEffect);
+
+      // Сбрасываем слайдер до начального состояния (100%)
       slider.set(100);
+
+      // Применяем эффект с максимальной интенсивностью
+      applyEffect(100);
     }
   }
 };
@@ -111,6 +199,7 @@ const loadImagePreview = () => {
     reader.onload = (e) => {
       preview.src = e.target.result;
 
+      // Обновляем превью эффектов
       const effectPreviews = document.querySelectorAll('.effects__preview');
       effectPreviews.forEach((previewElement) => {
         previewElement.style.backgroundImage = `url(${e.target.result})`;
@@ -126,8 +215,10 @@ const initImageEditor = () => {
   // Загружаем выбранное изображение
   loadImagePreview();
 
-  // Инициализация слайдера
-  initSlider();
+  // Инициализация слайдера (только один раз)
+  if (!slider) {
+    initSlider();
+  }
 
   // Настройка масштаба
   updateScale();
@@ -137,12 +228,22 @@ const initImageEditor = () => {
   // Настройка эффектов
   effectsList.addEventListener('change', onEffectChange);
 
-  // Скрываем слайдер по умолчанию
+  // Скрываем слайдер по умолчанию (для эффекта "Оригинал")
   effectLevel.classList.add('hidden');
+
+  // Сбрасываем значение эффекта
+  effectLevelValue.setAttribute('value', '');
+
+  // Убедимся, что выбран эффект "Оригинал"
+  const noneEffect = document.querySelector('#effect-none');
+  if (noneEffect) {
+    noneEffect.checked = true;
+  }
 };
 
 // Сброс редактора
 const resetImageEditor = () => {
+  // Сброс масштаба
   currentScale = 100;
   scaleControl.setAttribute('value', '100%');
   preview.style.transform = 'scale(1)';
@@ -156,6 +257,7 @@ const resetImageEditor = () => {
 
   preview.style.filter = 'none';
   effectLevel.classList.add('hidden');
+  effectLevelValue.setAttribute('value', '');
 
   // Сброс слайдера
   if (slider) {

@@ -1,4 +1,5 @@
 import { resetImageEditor } from './image-editor.js';
+import { sendData } from './api.js';
 
 const form = document.querySelector('.img-upload__form');
 const fileInput = form.querySelector('.img-upload__input');
@@ -105,6 +106,76 @@ const onCommentKeydown = (evt) => {
   }
 };
 
+// Показ сообщения об успешной отправке
+const showSuccessMessage = () => {
+  const successTemplate = document.querySelector('#success');
+  if (successTemplate) {
+    const successClone = successTemplate.content.cloneNode(true);
+    const successElement = successClone.querySelector('.success');
+    const successButton = successElement.querySelector('.success__button');
+
+    document.body.appendChild(successElement);
+
+    const closeSuccessMessage = () => {
+      successElement.remove();
+      document.removeEventListener('keydown', onSuccessEscape);
+      successElement.removeEventListener('click', onSuccessClick);
+    };
+
+    const onSuccessEscape = (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
+        closeSuccessMessage();
+      }
+    };
+
+    const onSuccessClick = (evt) => {
+      if (evt.target === successElement || evt.target === successButton) {
+        closeSuccessMessage();
+      }
+    };
+
+    successButton.addEventListener('click', closeSuccessMessage);
+    successElement.addEventListener('click', onSuccessClick);
+    document.addEventListener('keydown', onSuccessEscape);
+  }
+};
+
+// Показ сообщения об ошибке отправки
+const showErrorMessage = () => {
+  const errorTemplate = document.querySelector('#error');
+  if (errorTemplate) {
+    const errorClone = errorTemplate.content.cloneNode(true);
+    const errorElement = errorClone.querySelector('.error');
+    const errorButton = errorElement.querySelector('.error__button');
+
+    document.body.appendChild(errorElement);
+
+    const closeErrorMessage = () => {
+      errorElement.remove();
+      document.removeEventListener('keydown', onErrorEscape);
+      errorElement.removeEventListener('click', onErrorClick);
+    };
+
+    const onErrorEscape = (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
+        closeErrorMessage();
+      }
+    };
+
+    const onErrorClick = (evt) => {
+      if (evt.target === errorElement || evt.target === errorButton) {
+        closeErrorMessage();
+      }
+    };
+
+    errorButton.addEventListener('click', closeErrorMessage);
+    errorElement.addEventListener('click', onErrorClick);
+    document.addEventListener('keydown', onErrorEscape);
+  }
+};
+
 // Открытие формы
 const openForm = () => {
   overlay.classList.remove('hidden');
@@ -140,24 +211,25 @@ const onFormSubmit = (evt) => {
   submitButton.disabled = true;
   submitButton.textContent = 'Публикую...';
 
-  setTimeout(() => {
-    closeForm();
-    submitButton.disabled = false;
-    submitButton.textContent = 'Опубликовать';
+  // Подготавливаем данные формы
+  const formData = new FormData(form);
 
-    const successTemplate = document.querySelector('#success');
-    if (successTemplate) {
-      const successClone = successTemplate.content.cloneNode(true);
-      document.body.appendChild(successClone);
-
-      setTimeout(() => {
-        const successElement = document.querySelector('.success');
-        if (successElement) {
-          successElement.remove();
-        }
-      }, 3000);
-    }
-  }, 1000);
+  // Реальная отправка данных на сервер
+  sendData(formData)
+    .then(() => {
+      // Успешная отправка
+      closeForm();
+      showSuccessMessage();
+    })
+    .catch(() => {
+      // Ошибка отправки
+      showErrorMessage();
+    })
+    .finally(() => {
+      // Разблокируем кнопку в любом случае
+      submitButton.disabled = false;
+      submitButton.textContent = 'Опубликовать';
+    });
 };
 
 const onFileInputChange = () => {

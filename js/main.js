@@ -4,8 +4,6 @@ import { initImageEditor } from './image-editor.js';
 import { getData } from './api.js';
 import { initFilters } from './filters.js';
 
-const picturesContainer = document.querySelector('.pictures');
-
 // Показ сообщения об ошибке загрузки
 const showLoadErrorMessage = (message) => {
   const errorTemplate = document.querySelector('#error');
@@ -45,7 +43,7 @@ const showLoadErrorMessage = (message) => {
 // Загрузка данных с сервера
 getData()
   .then((photosArray) => {
-    initGallery(photosArray, picturesContainer);
+    initGallery(photosArray); // Убираем лишний параметр
     // Инициализируем фильтры
     initFilters(photosArray);
   })

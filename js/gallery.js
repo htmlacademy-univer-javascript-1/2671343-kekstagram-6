@@ -1,25 +1,36 @@
 import { renderThumbnails } from './photos-render.js';
 import { openFullscreenPhoto } from './fullscreen-photo.js';
 
-const onThumbnailClick = (photosArray, evt) => {
+let originalPhotos = [];
+let currentFilteredPhotos = [];
+const picturesContainer = document.querySelector('.pictures');
+
+const onThumbnailClick = (evt) => {
   const thumbnail = evt.target.closest('.picture');
 
-  if (thumbnail && thumbnail.dataset.index) {
-    const index = parseInt(thumbnail.dataset.index, 10);
-    openFullscreenPhoto(photosArray[index]);
+  if (thumbnail && thumbnail.dataset.id) {
+    const id = parseInt(thumbnail.dataset.id, 10);
+    // Ищем фотографию по ID в исходном массиве
+    const photoData = originalPhotos.find((photo) => photo.id === id);
+    if (photoData) {
+      openFullscreenPhoto(photoData);
+    }
   }
 };
 
-const initGallery = (photosArray, picturesContainer) => {
-  if (!photosArray || photosArray.length === 0) {
-    return;
-  }
+// Инициализация галереи с исходными фотографиями
+const initGallery = (photosArray) => {
+  originalPhotos = photosArray;
+  currentFilteredPhotos = photosArray;
 
   renderThumbnails(photosArray, picturesContainer);
-
-  picturesContainer.addEventListener('click', (evt) => {
-    onThumbnailClick(photosArray, evt);
-  });
+  picturesContainer.addEventListener('click', onThumbnailClick);
 };
 
-export { initGallery };
+// Рендер отфильтрованных фотографий
+const renderFilteredPhotos = (filteredPhotos) => {
+  currentFilteredPhotos = filteredPhotos;
+  renderThumbnails(filteredPhotos, picturesContainer);
+};
+
+export { initGallery, renderFilteredPhotos };

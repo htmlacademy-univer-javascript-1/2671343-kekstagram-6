@@ -2,6 +2,7 @@ import { initGallery } from './gallery.js';
 import { initForm } from './upload-validator.js';
 import { initImageEditor } from './image-editor.js';
 import { getData } from './api.js';
+import { initFilters } from './filters.js';
 
 const picturesContainer = document.querySelector('.pictures');
 
@@ -45,6 +46,8 @@ const showLoadErrorMessage = (message) => {
 getData()
   .then((photosArray) => {
     initGallery(photosArray, picturesContainer);
+    // Инициализируем фильтры
+    initFilters(photosArray);
   })
   .catch((error) => {
     showLoadErrorMessage(error.message);
@@ -56,6 +59,3 @@ initForm();
 // Инициализация редактора изображений при выборе файла
 const fileInput = document.querySelector('.img-upload__input');
 fileInput.addEventListener('change', initImageEditor);
-
-// Экспорт для тестирования (если нужно)
-export { showLoadErrorMessage };

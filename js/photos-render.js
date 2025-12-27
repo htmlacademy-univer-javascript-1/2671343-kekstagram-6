@@ -1,4 +1,4 @@
-const createThumbnail = (pictureData, index) => {
+const createThumbnail = (pictureData) => {
   const pictureTemplate = document.querySelector('#picture');
   const thumbnailElement = pictureTemplate.content.querySelector('.picture').cloneNode(true);
 
@@ -12,7 +12,8 @@ const createThumbnail = (pictureData, index) => {
   const thumbLikes = thumbnailElement.querySelector('.picture__likes');
   thumbLikes.textContent = pictureData.likes;
 
-  thumbnailElement.dataset.index = index;
+  // Используем ID фотографии вместо индекса
+  thumbnailElement.dataset.id = pictureData.id;
 
   return thumbnailElement;
 };
@@ -20,8 +21,8 @@ const createThumbnail = (pictureData, index) => {
 const renderThumbnails = (picturesList, picturesContainer) => {
   const renderFragment = document.createDocumentFragment();
 
-  picturesList.forEach((pictureItem, index) => {
-    const thumbnail = createThumbnail(pictureItem, index);
+  picturesList.forEach((pictureItem) => {
+    const thumbnail = createThumbnail(pictureItem);
     renderFragment.appendChild(thumbnail);
   });
 

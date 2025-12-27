@@ -11,6 +11,10 @@ const onThumbnailClick = (photosArray, evt) => {
 };
 
 const initGallery = (photosArray, picturesContainer) => {
+  if (!photosArray || photosArray.length === 0) {
+    return;
+  }
+
   renderThumbnails(photosArray, picturesContainer);
 
   picturesContainer.addEventListener('click', (evt) => {

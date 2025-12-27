@@ -272,6 +272,10 @@ const resetImageEditor = () => {
   effectPreviews.forEach((previewElement) => {
     previewElement.style.backgroundImage = '';
   });
+
+  // Сброс file input
+  const fileInput = document.querySelector('.img-upload__input');
+  fileInput.value = '';
 };
 
 export { initImageEditor, resetImageEditor };

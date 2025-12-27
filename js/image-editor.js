@@ -17,58 +17,74 @@ let currentScale = 100;
 // Настройки эффектов согласно ТЗ
 const EFFECTS = {
   none: {
-    filter: 'none',
+    name: 'none',
+    className: 'effects__preview--none',
     min: 0,
     max: 100,
-    step: 1,
-    unit: '',
-    className: 'effects__preview--none'
+    step: 1
   },
   chrome: {
-    filter: 'grayscale',
+    name: 'grayscale',
+    className: 'effects__preview--chrome',
     min: 0,
     max: 1,
     step: 0.1,
-    unit: '',
-    className: 'effects__preview--chrome'
+    unit: ''
   },
   sepia: {
-    filter: 'sepia',
+    name: 'sepia',
+    className: 'effects__preview--sepia',
     min: 0,
     max: 1,
     step: 0.1,
-    unit: '',
-    className: 'effects__preview--sepia'
+    unit: ''
   },
   marvin: {
-    filter: 'invert',
+    name: 'invert',
+    className: 'effects__preview--marvin',
     min: 0,
     max: 100,
     step: 1,
-    unit: '%',
-    className: 'effects__preview--marvin'
+    unit: '%'
   },
   phobos: {
-    filter: 'blur',
+    name: 'blur',
+    className: 'effects__preview--phobos',
     min: 0,
     max: 3,
     step: 0.1,
-    unit: 'px',
-    className: 'effects__preview--phobos'
+    unit: 'px'
   },
   heat: {
-    filter: 'brightness',
+    name: 'brightness',
+    className: 'effects__preview--heat',
     min: 1,
     max: 3,
     step: 0.1,
-    unit: '',
-    className: 'effects__preview--heat'
+    unit: ''
   }
 };
 
 let currentEffect = 'none';
 let slider = null;
 
+// Преобразование значения слайдера (0-100) в значение эффекта
+const calculateEffectValue = (effectName, sliderValue) => {
+  switch (effectName) {
+    case 'chrome':
+      return (sliderValue / 100).toFixed(1);
+    case 'sepia':
+      return (sliderValue / 100).toFixed(1);
+    case 'marvin':
+      return Math.round(sliderValue);
+    case 'phobos':
+      return (sliderValue * 0.03).toFixed(1);
+    case 'heat':
+      return (1 + sliderValue * 0.02).toFixed(1);
+    default:
+      return sliderValue;
+  }
+};
 
 // Применение эффекта
 const applyEffect = (sliderValue) => {
@@ -80,36 +96,10 @@ const applyEffect = (sliderValue) => {
     return;
   }
 
-  let effectValue;
+  const effectValue = calculateEffectValue(currentEffect, sliderValue);
+  const effectString = `${effect.name}(${effectValue}${effect.unit})`;
 
-  // Преобразуем значение слайдера (0-100) в значение эффекта
-  switch (currentEffect) {
-    case 'chrome': // 0-100 -> 0-1
-      effectValue = (sliderValue / 100).toFixed(1);
-      preview.style.filter = `grayscale(${effectValue})`;
-      break;
-
-    case 'sepia': // 0-100 -> 0-1
-      effectValue = (sliderValue / 100).toFixed(1);
-      preview.style.filter = `sepia(${effectValue})`;
-      break;
-
-    case 'marvin': // 0-100 -> 0-100%
-      effectValue = Math.round(sliderValue);
-      preview.style.filter = `invert(${effectValue}%)`;
-      break;
-
-    case 'phobos': // 0-100 -> 0-3px
-      effectValue = (sliderValue * 0.03).toFixed(1);
-      preview.style.filter = `blur(${effectValue}px)`;
-      break;
-
-    case 'heat': // 0-100 -> 1-3
-      effectValue = (1 + sliderValue * 0.02).toFixed(1);
-      preview.style.filter = `brightness(${effectValue})`;
-      break;
-  }
-
+  preview.style.filter = effectString;
   effectLevelValue.value = effectValue;
 };
 
@@ -166,10 +156,11 @@ const onScaleBiggerClick = () => {
 const onEffectChange = (evt) => {
   if (evt.target.name === 'effect') {
     currentEffect = evt.target.value;
+    const effect = EFFECTS[currentEffect];
 
     // Обновляем классы превью
     preview.className = '';
-    preview.classList.add(`effects__preview--${currentEffect}`);
+    preview.classList.add(effect.className);
 
     if (currentEffect === 'none') {
       // Скрываем слайдер для эффекта "Оригинал"
@@ -180,8 +171,15 @@ const onEffectChange = (evt) => {
       // Показываем слайдер для других эффектов
       effectLevel.classList.remove('hidden');
 
-      // Сбрасываем слайдер до начального состояния (100%)
-      slider.set(100);
+      // Обновляем настройки слайдера
+      slider.updateOptions({
+        range: {
+          min: 0,
+          max: 100
+        },
+        start: 100,
+        step: 1
+      });
 
       // Применяем эффект с максимальной интенсивностью
       applyEffect(100);

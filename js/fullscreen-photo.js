@@ -13,7 +13,8 @@ let currentComments = [];
 let commentsShown = 0;
 const COMMENTS_PER_PORTION = 5;
 
-const createCommentElement = (comment) => {
+/* Helpers - use function declarations to ensure hoisting */
+function createCommentElement(comment) {
   const commentElement = document.createElement('li');
   commentElement.classList.add('social__comment');
 
@@ -30,9 +31,9 @@ const createCommentElement = (comment) => {
 
   commentElement.append(commentImage, commentText);
   return commentElement;
-};
+}
 
-const renderCommentsPortion = () => {
+function renderCommentsPortion() {
   const commentsToShow = Math.min(commentsShown + COMMENTS_PER_PORTION, currentComments.length);
 
   for (let i = commentsShown; i < commentsToShow; i++) {
@@ -46,59 +47,59 @@ const renderCommentsPortion = () => {
   if (commentsShown >= currentComments.length) {
     commentsLoader.classList.add('hidden');
   }
-};
+}
 
-const onCommentsLoaderClick = () => {
-  renderCommentsPortion();
-};
-
-const setupEventListeners = () => {
-  document.addEventListener('keydown', onDocumentKeydown);
-  cancelButton.addEventListener('click', onCancelButtonClick);
-  commentsLoader.addEventListener('click', onCommentsLoaderClick);
-};
-
-const removeEventListeners = () => {
-  document.removeEventListener('keydown', onDocumentKeydown);
-  cancelButton.removeEventListener('click', onCancelButtonClick);
-  commentsLoader.removeEventListener('click', onCommentsLoaderClick);
-};
-
-const closeFullscreenPhoto = () => {
+function closeFullscreenPhoto() {
   bigPictureElement.classList.add('hidden');
   body.classList.remove('modal-open');
   removeEventListeners();
-};
+}
 
-const onDocumentKeydown = (evt) => {
+function onDocumentKeydown(evt) {
   if (evt.key === 'Escape') {
     evt.preventDefault();
     closeFullscreenPhoto();
   }
-};
+}
 
-const onCancelButtonClick = () => {
+function onCancelButtonClick() {
   closeFullscreenPhoto();
-};
+}
 
-const renderComments = (comments) => {
+function onCommentsLoaderClick() {
+  renderCommentsPortion();
+}
+
+function setupEventListeners() {
+  document.addEventListener('keydown', onDocumentKeydown);
+  cancelButton.addEventListener('click', onCancelButtonClick);
+  commentsLoader.addEventListener('click', onCommentsLoaderClick);
+}
+
+function removeEventListeners() {
+  document.removeEventListener('keydown', onDocumentKeydown);
+  cancelButton.removeEventListener('click', onCancelButtonClick);
+  commentsLoader.removeEventListener('click', onCommentsLoaderClick);
+}
+
+function renderComments(comments) {
   currentComments = comments;
   commentsShown = 0;
   socialCommentElement.innerHTML = '';
   commentsLoader.classList.remove('hidden');
 
   renderCommentsPortion();
-};
+}
 
-const fillPhotoData = (photoData) => {
+function fillPhotoData(photoData) {
   bigPictureImg.src = photoData.url;
   bigPictureImg.alt = photoData.description;
   likesCount.textContent = photoData.likes;
   commentsCount.textContent = photoData.comments.length;
   socialCaption.textContent = photoData.description;
-};
+}
 
-const openFullscreenPhoto = (photoData) => {
+function openFullscreenPhoto(photoData) {
   fillPhotoData(photoData);
 
   commentCountBlock.classList.remove('hidden');
@@ -110,6 +111,7 @@ const openFullscreenPhoto = (photoData) => {
   body.classList.add('modal-open');
 
   setupEventListeners();
-};
+}
+
 
 export { openFullscreenPhoto };

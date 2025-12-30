@@ -32,10 +32,7 @@ const filterRandom = (photos) => {
   return shuffled.slice(0, RANDOM_PHOTOS_COUNT);
 };
 
-const filterDiscussed = (photos) => {
-  // Сортировка по убыванию количества комментариев
-  return [...photos].sort((a, b) => b.comments.length - a.comments.length);
-};
+const filterDiscussed = (photos) => [...photos].sort((a, b) => b.comments.length - a.comments.length);
 
 // Объект с функциями фильтрации
 const filterFunctions = {

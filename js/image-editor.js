@@ -132,7 +132,7 @@ const initSlider = () => {
 
 // Обновление масштаба
 const updateScale = () => {
-  scaleControl.value = `${currentScale}%`;
+  scaleControl.setAttribute('value', `${currentScale}%`);
   preview.style.transform = `scale(${currentScale / 100})`;
 };
 
@@ -241,7 +241,7 @@ const initImageEditor = () => {
 const resetImageEditor = () => {
   // Сброс масштаба
   currentScale = 100;
-  scaleControl.value = '100%';
+  scaleControl.setAttribute('value', '100%');
   preview.style.transform = 'scale(1)';
 
   // Сброс эффектов

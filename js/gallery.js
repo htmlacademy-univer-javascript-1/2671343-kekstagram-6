@@ -2,7 +2,6 @@ import { renderThumbnails } from './photos-render.js';
 import { openFullscreenPhoto } from './fullscreen-photo.js';
 
 let originalPhotos = [];
-let currentFilteredPhotos = [];
 const picturesContainer = document.querySelector('.pictures');
 
 const onThumbnailClick = (evt) => {
@@ -21,7 +20,6 @@ const onThumbnailClick = (evt) => {
 // Инициализация галереи с исходными фотографиями
 const initGallery = (photosArray) => {
   originalPhotos = photosArray;
-  currentFilteredPhotos = photosArray;
 
   renderThumbnails(photosArray, picturesContainer);
   picturesContainer.addEventListener('click', onThumbnailClick);
@@ -29,7 +27,6 @@ const initGallery = (photosArray) => {
 
 // Рендер отфильтрованных фотографий
 const renderFilteredPhotos = (filteredPhotos) => {
-  currentFilteredPhotos = filteredPhotos;
   renderThumbnails(filteredPhotos, picturesContainer);
 };
 

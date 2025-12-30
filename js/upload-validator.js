@@ -18,6 +18,15 @@ const pristine = new Pristine(form, {
   errorTextClass: 'img-upload__error-text'
 });
 
+// Хранение данных формы
+let savedFormData = {
+  hashtags: '',
+  description: '',
+  file: null,
+  scale: 100,
+  effect: 'none'
+};
+
 const validateHashtags = (value) => {
   if (value.trim() === '') {
     return true;
@@ -106,6 +115,110 @@ const onCommentKeydown = (evt) => {
   }
 };
 
+// Сохранение данных формы
+const saveFormData = () => {
+  savedFormData = {
+    hashtags: hashtagInput.value,
+    description: commentInput.value,
+    file: fileInput.files[0],
+    // Сохраняем текущий масштаб и эффект из image-editor.js
+    scale: parseInt(document.querySelector('.scale__control--value').value, 10),
+    effect: document.querySelector('input[name="effect"]:checked').value
+  };
+};
+
+// Восстановление данных формы
+const restoreFormData = () => {
+  if (savedFormData.file) {
+    // Создаем новый FileList с сохраненным файлом
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(savedFormData.file);
+    fileInput.files = dataTransfer.files;
+
+    // Обновляем превью изображения
+    const preview = document.querySelector('.img-upload__preview img');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      preview.src = e.target.result;
+    };
+    reader.readAsDataURL(savedFormData.file);
+  }
+
+  hashtagInput.value = savedFormData.hashtags;
+  commentInput.value = savedFormData.description;
+
+  // Восстанавливаем масштаб и эффект (это вызовет соответствующие функции в image-editor.js)
+  const scaleControl = document.querySelector('.scale__control--value');
+  scaleControl.value = `${savedFormData.scale}%`;
+
+  const effectInput = document.querySelector(`#effect-${savedFormData.effect}`);
+  if (effectInput) {
+    effectInput.checked = true;
+  }
+
+  pristine.validate();
+};
+
+// Функции для закрытия сообщений
+const createCloseSuccessMessageHandlers = (successElement) => {
+  // Создаем замыкание для хранения обработчиков
+  let onSuccessEscape = '';
+  let onSuccessClick = '';
+
+  const removeEventListeners = () => {
+    document.removeEventListener('keydown', onSuccessEscape);
+    successElement.removeEventListener('click', onSuccessClick);
+  };
+
+  onSuccessEscape = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      successElement.remove();
+      removeEventListeners();
+    }
+  };
+
+  onSuccessClick = (evt) => {
+    if (evt.target === successElement || evt.target.closest('.success__button')) {
+      successElement.remove();
+      removeEventListeners();
+    }
+  };
+
+  return { onSuccessEscape, onSuccessClick };
+};
+
+const createCloseErrorMessageHandlers = (errorElement, onCloseCallback = null) => {
+  // Создаем замыкание для хранения обработчиков
+  let onErrorEscape= '';
+  let onErrorClick = '';
+
+  const removeEventListeners = () => {
+    document.removeEventListener('keydown', onErrorEscape);
+    errorElement.removeEventListener('click', onErrorClick);
+    if (onCloseCallback) {
+      onCloseCallback();
+    }
+  };
+
+  onErrorEscape = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      errorElement.remove();
+      removeEventListeners();
+    }
+  };
+
+  onErrorClick = (evt) => {
+    if (evt.target === errorElement || evt.target.closest('.error__button')) {
+      errorElement.remove();
+      removeEventListeners();
+    }
+  };
+
+  return { onErrorEscape, onErrorClick };
+};
+
 // Показ сообщения об успешной отправке
 const showSuccessMessage = () => {
   const successTemplate = document.querySelector('#success');
@@ -116,26 +229,16 @@ const showSuccessMessage = () => {
 
     document.body.appendChild(successElement);
 
-    const closeSuccessMessage = () => {
+    const { onSuccessEscape, onSuccessClick } = createCloseSuccessMessageHandlers(successElement);
+
+    const handleSuccessButtonClick = () => {
       successElement.remove();
       document.removeEventListener('keydown', onSuccessEscape);
       successElement.removeEventListener('click', onSuccessClick);
+      successButton.removeEventListener('click', handleSuccessButtonClick);
     };
 
-    const onSuccessEscape = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        closeSuccessMessage();
-      }
-    };
-
-    const onSuccessClick = (evt) => {
-      if (evt.target === successElement || evt.target === successButton) {
-        closeSuccessMessage();
-      }
-    };
-
-    successButton.addEventListener('click', closeSuccessMessage);
+    successButton.addEventListener('click', handleSuccessButtonClick);
     successElement.addEventListener('click', onSuccessClick);
     document.addEventListener('keydown', onSuccessEscape);
   }
@@ -151,50 +254,51 @@ const showErrorMessage = () => {
 
     document.body.appendChild(errorElement);
 
-    const closeErrorMessage = () => {
+    // Функция для повторного открытия формы с сохраненными данными
+    const reopenFormWithSavedData = () => {
+      // Восстанавливаем данные формы
+      restoreFormData();
+      // Снова открываем форму
+      overlay.classList.remove('hidden');
+      document.body.classList.add('modal-open');
+      // Возвращаем фокус
+      submitButton.focus();
+    };
+
+    const { onErrorEscape, onErrorClick } = createCloseErrorMessageHandlers(errorElement, reopenFormWithSavedData);
+
+    const handleErrorButtonClick = () => {
       errorElement.remove();
       document.removeEventListener('keydown', onErrorEscape);
       errorElement.removeEventListener('click', onErrorClick);
+      errorButton.removeEventListener('click', handleErrorButtonClick);
+      // После закрытия ошибки открываем форму с сохраненными данными
+      reopenFormWithSavedData();
     };
 
-    const onErrorEscape = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        closeErrorMessage();
-      }
-    };
-
-    const onErrorClick = (evt) => {
-      if (evt.target === errorElement || evt.target === errorButton) {
-        closeErrorMessage();
-      }
-    };
-
-    errorButton.addEventListener('click', closeErrorMessage);
+    errorButton.addEventListener('click', handleErrorButtonClick);
     errorElement.addEventListener('click', onErrorClick);
     document.addEventListener('keydown', onErrorEscape);
   }
 };
 
-// Открытие формы
-const openForm = () => {
-  overlay.classList.remove('hidden');
-  document.body.classList.add('modal-open');
-
-  hashtagInput.addEventListener('keydown', onHashtagKeydown);
-  commentInput.addEventListener('keydown', onCommentKeydown);
-};
-
 // Закрытие формы
-const closeForm = () => {
+const closeForm = (resetData = true) => {
   overlay.classList.add('hidden');
   document.body.classList.remove('modal-open');
 
-  form.reset();
-  pristine.reset();
-  fileInput.value = '';
-
-  resetImageEditor();
+  if (resetData) {
+    form.reset();
+    pristine.reset();
+    resetImageEditor();
+    savedFormData = {
+      hashtags: '',
+      description: '',
+      file: null,
+      scale: 100,
+      effect: 'none'
+    };
+  }
 
   hashtagInput.removeEventListener('keydown', onHashtagKeydown);
   commentInput.removeEventListener('keydown', onCommentKeydown);
@@ -207,6 +311,9 @@ const onFormSubmit = (evt) => {
     return;
   }
 
+  // Сохраняем данные формы перед отправкой
+  saveFormData();
+
   // Блокируем кнопку отправки
   submitButton.disabled = true;
   submitButton.textContent = 'Публикую...';
@@ -218,11 +325,12 @@ const onFormSubmit = (evt) => {
   sendData(formData)
     .then(() => {
       // Успешная отправка
-      closeForm();
+      closeForm(true); // Сбрасываем данные
       showSuccessMessage();
     })
     .catch(() => {
-      // Ошибка отправки
+      // Ошибка отправки - закрываем форму, но сохраняем данные
+      closeForm(false); // НЕ сбрасываем данные
       showErrorMessage();
     })
     .finally(() => {
@@ -230,6 +338,15 @@ const onFormSubmit = (evt) => {
       submitButton.disabled = false;
       submitButton.textContent = 'Опубликовать';
     });
+};
+
+// Открытие формы
+const openForm = () => {
+  overlay.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+
+  hashtagInput.addEventListener('keydown', onHashtagKeydown);
+  commentInput.addEventListener('keydown', onCommentKeydown);
 };
 
 const onFileInputChange = () => {
@@ -241,13 +358,22 @@ const onFileInputChange = () => {
 };
 
 const onCancelButtonClick = () => {
-  closeForm();
+  closeForm(true); // При отмене сбрасываем данные
 };
 
 const onDocumentKeydown = (evt) => {
+  // Проверяем, нет ли открытого сообщения об ошибке или успехе
+  const errorMessage = document.querySelector('.error');
+  const successMessage = document.querySelector('.success');
+
+  // Если есть открытое сообщение, не закрываем форму
+  if (errorMessage || successMessage) {
+    return;
+  }
+
   if (evt.key === 'Escape' && !evt.target.matches('.text__hashtags, .text__description')) {
     evt.preventDefault();
-    closeForm();
+    closeForm(true); // При Escape сбрасываем данные
   }
 };
 

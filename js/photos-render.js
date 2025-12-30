@@ -28,7 +28,7 @@ const renderThumbnails = (picturesList, picturesContainer) => {
 
   // Удаляем только существующие миниатюры (.picture), не трогая другие элементы
   const existingThumbnails = picturesContainer.querySelectorAll('.picture');
-  existingThumbnails.forEach(thumbnail => thumbnail.remove());
+  existingThumbnails.forEach((thumbnail) => thumbnail.remove());
 
   // Добавляем новые миниатюры в контейнер
   picturesContainer.appendChild(renderFragment);
